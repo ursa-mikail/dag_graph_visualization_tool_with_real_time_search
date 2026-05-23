@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dagviz-postgres
+    environment:
+      POSTGRES_USER: dagviz
+      POSTGRES_PASSWORD: dagviz_secret
+      POSTGRES_DB: dagviz
+    volumes:
+      - dagviz_pgdata:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dagviz"]
+      interval: 3s
+      timeout: 5s
+      retries: 15
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dagviz-backend
+    environment:
+      DATABASE_URL: postgres://dagviz:dagviz_secret@postgres:5432/dagviz?sslmode=disable
+      PORT: 8080
+      DOMAIN: laundering
+      SIM_INTERVAL_MS: 2500
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dagviz-frontend
+    environment:
+      # Used by vite.config.ts proxy — route /api and /ws to the backend service
+      BACKEND_HOST: backend
+      BACKEND_PORT: 8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  dagviz_pgdata:
