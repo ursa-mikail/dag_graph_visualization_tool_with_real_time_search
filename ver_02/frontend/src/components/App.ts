@@ -86,7 +86,13 @@ export class App {
         <!-- Buttons -->
         <div style="display:flex;gap:6px;align-items:center;">
           <button id="btn-labels" class="btn" style="font-size:11px;">⊞ Labels</button>
-          <button id="btn-fit"    class="btn" style="font-size:11px;">⊡ Fit</button>
+          <!-- Zoom cluster -->
+          <div style="display:flex;gap:1px;background:#182030;border:1px solid #182030;border-radius:6px;overflow:hidden;">
+            <button id="btn-zoom-in"    class="btn" style="font-size:14px;padding:4px 11px;border-radius:0;border:none;" title="Zoom in (or scroll up)">+</button>
+            <button id="btn-zoom-reset" class="btn" style="font-size:10px;padding:4px 9px;border-radius:0;border:none;border-left:1px solid #182030;border-right:1px solid #182030;" title="Reset zoom">1:1</button>
+            <button id="btn-zoom-out"   class="btn" style="font-size:14px;padding:4px 11px;border-radius:0;border:none;" title="Zoom out (or scroll down)">−</button>
+          </div>
+          <button id="btn-fit" class="btn" style="font-size:11px;">⊡ Fit all</button>
         </div>
 
         <div style="flex:1;"></div>
@@ -245,6 +251,9 @@ export class App {
 
     this.root.querySelector('#btn-labels')!.addEventListener('click', () => this.canvas.toggleLabels())
     this.root.querySelector('#btn-fit')!.addEventListener('click',    () => this.canvas.fitView())
+    this.root.querySelector('#btn-zoom-in')!.addEventListener('click',    () => this.canvas.zoomIn())
+    this.root.querySelector('#btn-zoom-out')!.addEventListener('click',   () => this.canvas.zoomOut())
+    this.root.querySelector('#btn-zoom-reset')!.addEventListener('click', () => this.canvas.resetZoom())
   }
 
   private wireSearch() {
